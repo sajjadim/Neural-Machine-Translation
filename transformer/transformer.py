@@ -9,7 +9,7 @@ class Transfomer(nn.Module):
         self.src_embed = src_embed
         self.trgt_embed = trgt_embed
         self.src_pos = src_pos
-        self.trgt_pos = src_pos
+        self.trgt_pos = trgt_pos
         self.projection_layer = projection_layer
     
     def encode(self,src,src_mask):

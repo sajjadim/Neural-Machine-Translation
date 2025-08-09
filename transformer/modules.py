@@ -67,18 +67,19 @@ class MultiHeadAttention(nn.Module):
         self.h = h
         assert (d_model % h) == 0, "d_model is not divisible by h"
         self.d_k = d_model // h
-        self.w_q = nn.Linear(d_model, d_model)
-        self.w_k = nn.Linear(d_model, d_model)
-        self.w_v = nn.Linear(d_model, d_model)
-        self.w_o = nn.Linear(d_model, d_model)
+        self.w_q = nn.Linear(d_model, d_model,bias=False)
+        self.w_k = nn.Linear(d_model, d_model,bias=False)
+        self.w_v = nn.Linear(d_model, d_model,bias=False)
+        self.w_o = nn.Linear(d_model, d_model,bias=False)
         self.dropout = nn.Dropout(dropout)
 
     @staticmethod
-    def attention(key, query, value, mask, dropout: nn.Dropout):
+    def attention(query,key, value, mask, dropout: nn.Dropout):
         d_k = query.shape[-1]
         # (batch_size,heads, seq_len,d_k) -->  (batch_size,heads, seq_len,seq_len)
         attention_scores: torch.Tensor = (query @ key.transpose(-2, -1)) / math.sqrt(d_k)
         if mask is not None:
+            mask = mask.to(attention_scores.device)
             attention_scores.masked_fill_(mask == 0, -1e9)
         attention_scores = attention_scores.softmax(-1)
         if dropout:
@@ -95,7 +96,7 @@ class MultiHeadAttention(nn.Module):
         key = key.view(k.shape[0], k.shape[1], self.h, self.d_k).transpose(1, 2)
         value = value.view(v.shape[0], v.shape[1], self.h, self.d_k).transpose(1, 2)
         x, self.attention_scores = MultiHeadAttention.attention(
-            key, query, value, mask=None, dropout=self.dropout
+            query,key,value, mask=mask, dropout=self.dropout
         )
         # (batch_size,heads, seq_len,d_k) --> (batch_size,seq_len,heads,d_k) --> (batch_size,seq_len,d_model)
         x = x.transpose(1, 2).contiguous().view(x.shape[0], -1, self.h * self.d_k)
@@ -121,3 +122,4 @@ class ProjectionLayer(nn.Module):
     def forward(self, x):
         x = self.proj(x)
         return torch.log_softmax(x, dim=-1)
+        # return x

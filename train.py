@@ -7,7 +7,7 @@ from tokenizers.trainers import WordLevelTrainer
 from tokenizers.pre_tokenizers import Whitespace
 from pathlib import Path
 from tqdm import tqdm
-from torch.utils.data import random_split, DataLoader,Dataset
+from torch.utils.data import random_split, DataLoader,Dataset,Subset
 from dataset import BilingualDataset, causal_mask
 from transformer import build_transformer
 from config import get_weights_file_path, get_config
@@ -38,6 +38,8 @@ def get_ds(config):
     train_ds_raw,val_ds_raw = random_split(ds_raw,[train_ds_size,val_ds_size])
     train_ds = BilingualDataset(train_ds_raw,tokenizer_src,tokenizer_tgt,config["lang_src"],config["lang_tgt"],config["seq_len"])
     val_ds = BilingualDataset(val_ds_raw,tokenizer_src,tokenizer_tgt,config["lang_src"],config["lang_tgt"],config["seq_len"])
+    train_ds = Subset(train_ds,torch.arange(50))
+    val_ds = Subset(val_ds,torch.arange(30))
     max_len_src = 0
     max_len_tgt = 0
     for item in ds_raw:
@@ -64,9 +66,8 @@ def greedy_decode(model,source,source_mask,tokenizer_src,tokenizer_tgt,max_len,d
     while True:
         if decoder_input.size(1) == max_len:
             break
-        
-        
         decoder_mask = causal_mask(decoder_input.size(1)).type_as(source_mask).to(device)
+        # print(decoder_input,decoder_mask)
         out = model.decode(encoder_output,source_mask,decoder_input,decoder_mask)
         
         prob = model.project(out[:,-1])
@@ -127,7 +128,7 @@ def train_model(config):
         optimizer.load_state_dict(state["optimizer_state_dict"])
         model.load_state_dict(state["model_state_dict"])
         global_step = state["global_step"]
-    loss_fn = nn.CrossEntropyLoss(ignore_index=tokenizer_src.token_to_id("[PAD]"),label_smoothing=0.1).to(device)
+    loss_fn = nn.CrossEntropyLoss(ignore_index=tokenizer_tgt.token_to_id("[PAD]"),label_smoothing=0.1).to(device)
     for epoch in range(initial_epoch,config["num_epochs"]):
         batch_iterator = tqdm(train_dataloader,desc=f"processing epoch {epoch:02d}")
 
@@ -171,5 +172,9 @@ def train_model(config):
 if __name__ == "__main__":
     config = get_config()
     train_model(config)
+    # train_loader,val_loader,tokenizer_src,tokenizer_tgt = get_ds(config)
+    # for item in train_loader:
+    #     print(item)
+    # train_model(config)
                 
     
