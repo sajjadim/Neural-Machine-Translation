@@ -14,7 +14,7 @@ def build_transformer(
     trgt_seq_len: int,
     d_model: int = 512,
     N: int = 6,
-    h: int = 0,
+    h: int = 4,
     dropout: float = 0.1,
     d_ff=2048,
 ) -> Transfomer:

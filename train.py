@@ -38,8 +38,7 @@ def get_ds(config):
     train_ds_raw,val_ds_raw = random_split(ds_raw,[train_ds_size,val_ds_size])
     train_ds = BilingualDataset(train_ds_raw,tokenizer_src,tokenizer_tgt,config["lang_src"],config["lang_tgt"],config["seq_len"])
     val_ds = BilingualDataset(val_ds_raw,tokenizer_src,tokenizer_tgt,config["lang_src"],config["lang_tgt"],config["seq_len"])
-    train_ds = Subset(train_ds,torch.arange(50))
-    val_ds = Subset(val_ds,torch.arange(30))
+   
     max_len_src = 0
     max_len_tgt = 0
     for item in ds_raw:
