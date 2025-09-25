@@ -1,6 +1,6 @@
 ## Transformer: Sequence-to-Sequence Neural Machine Translation
 
-This project is the implementation of Transformer architecture sequence-to-sequence model for neural machine translation, inspired by the original ["Attention is All You Need"](https://arxiv.org/abs/1706.03762) paper. The code is modular, extensible, and uses PyTorch for all neural network components.
+This project implements a Transformer-based sequence-to-sequence model for neural machine translation, inspired by the original ["Attention is All You Need"](https://arxiv.org/abs/1706.03762) paper. The code is modular, extensible, and uses PyTorch for all neural network components.
 
 All core components—**multi-head self-attention**, **positional encoding**, and the **encoder-decoder structure**—are custom-built without relying on high-level implementations. 
 
